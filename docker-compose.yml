@@ -1,0 +1,9 @@
+
+services:
+  tg-bot:
+    build: .
+    container_name: tg-bot
+    restart: unless-stopped
+    environment:
+      - BOT_TOKEN=
+    

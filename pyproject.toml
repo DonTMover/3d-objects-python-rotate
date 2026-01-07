@@ -1,0 +1,14 @@
+[project]
+name = "3d-objects-python-rotate"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "aiogram>=3.24.0",
+]
+
+[tool.poetry.dependencies]
+# Added for 3D rendering
+numpy = "^1.28"
+matplotlib = "^3.8"

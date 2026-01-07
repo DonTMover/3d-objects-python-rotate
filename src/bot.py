@@ -1,0 +1,60 @@
+import asyncio
+import logging
+import sys
+from os import getenv
+
+from aiogram import Bot, Dispatcher, html
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
+from aiogram.filters import CommandStart, Command
+from aiogram.types import Message
+
+TOKEN = getenv("BOT_TOKEN")
+
+dp = Dispatcher()
+
+
+@dp.message(CommandStart())
+async def command_start_handler(message: Message) -> None:
+    await message.answer(f"Hello, {html.bold(message.from_user.full_name)}!")
+
+
+@dp.message(Command(commands=["shape"]))
+async def shape_handler(message: Message) -> None:
+    """Usage: /shape <shape> [size]
+
+    Examples:
+    /shape sphere 1.5
+    /shape cube 2
+    /shape cone 1
+    /shape cylinder 0.8
+    """
+    from . import renderer
+    text = message.text or ""
+    parts = text.split()
+    shape = parts[1] if len(parts) > 1 else "sphere"
+    size = 1.0
+    if len(parts) > 2:
+        try:
+            size = float(parts[2])
+        except ValueError:
+            pass
+
+    await message.answer("Generating image...")
+    try:
+        path = renderer.render_shape(shape=shape, size=size)
+        with open(path, "rb") as f:
+             await message.answer_photo(f)
+             await message.answer(f"Here is your {shape} of size {size}.")
+    except Exception as exc:
+        await message.answer(f"Failed to render shape: {exc}")
+
+
+async def main() -> None:
+    bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    await dp.start_polling(bot)
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+    asyncio.run(main())
