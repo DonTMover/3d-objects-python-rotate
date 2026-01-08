@@ -28,11 +28,12 @@ async def shape_handler(message: Message) -> None:
     /shape cube 2
     /shape cone 1
     /shape cylinder 0.8
+    Можно использовать русские названия: "сфера", "куб", "конус", "цилиндр".
     """
     from . import renderer
     text = message.text or ""
     parts = text.split()
-    shape = parts[1] if len(parts) > 1 else "sphere"
+    raw_shape = parts[1] if len(parts) > 1 else "sphere"
     size = 1.0
     if len(parts) > 2:
         try:
@@ -40,14 +41,45 @@ async def shape_handler(message: Message) -> None:
         except ValueError:
             pass
 
+    # mapping Russian names to internal English identifiers
+    mapping = {
+        "сфера": "sphere",
+        "шар": "sphere",
+        "куб": "cube",
+        "конус": "cone",
+        "цилиндр": "cylinder",
+        "цилиндры": "cylinder",
+        "сфера": "sphere",
+        "конус": "cone",
+    }
+
+    shape = mapping.get(raw_shape.lower(), raw_shape.lower())
+
     await message.answer("Generating image...")
     try:
         path = renderer.render_shape(shape=shape, size=size)
         with open(path, "rb") as f:
-             await message.answer_photo(f)
-             await message.answer(f"Here is your {shape} of size {size}.")
+            await message.answer_photo(f)
+            await message.answer(f"Here is your {shape} of size {size}.")
     except Exception as exc:
         await message.answer(f"Failed to render shape: {exc}")
+
+
+@dp.message(Command(commands=["help"]))
+async def help_handler(message: Message) -> None:
+    text = (
+        "Использование:\n"
+        "/shape <фигура> [размер]\n\n"
+        "Поддерживаемые фигуры:\n"
+        "  - сфера, шар (sphere)\n"
+        "  - куб (cube)\n"
+        "  - конус (cone)\n"
+        "  - цилиндр (cylinder)\n\n"
+        "Примеры:\n"
+        "  /shape сфера 1.5\n"
+        "  /shape cube 2\n"
+    )
+    await message.answer(text)
 
 
 async def main() -> None:

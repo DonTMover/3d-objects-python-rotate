@@ -5,5 +5,5 @@ services:
     container_name: tg-bot
     restart: unless-stopped
     environment:
-      - BOT_TOKEN=
+      - BOT_TOKEN=7579539691:AAFIFg1aA9WlsgbPhulw1h7dHWnHW2VN4ps
     
