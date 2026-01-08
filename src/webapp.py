@@ -18,3 +18,17 @@ templates = Jinja2Templates(directory=templates_dir)
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
+
+
+@app.get("/status")
+async def status():
+    """Return current webapp URL and basic info for debugging.
+
+    The `serve_and_ngrok.py` script sets `WEBAPP_URL` in the environment
+    before starting the web server; this endpoint exposes it for container logs.
+    """
+    from os import getenv
+    return {
+        "webapp_url": getenv("WEBAPP_URL", ""),
+        "have_pyrender": True if getenv("HAVE_PYRENDER") == "1" else False,
+    }
