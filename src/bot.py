@@ -55,14 +55,17 @@ async def shape_handler(message: Message) -> None:
 
     shape = mapping.get(raw_shape.lower(), raw_shape.lower())
 
-    await message.answer("Generating image...")
-    try:
-        path = renderer.render_shape(shape=shape, size=size)
-        with open(path, "rb") as f:
-            await message.answer_photo(f)
-            await message.answer(f"Here is your {shape} of size {size}.")
-    except Exception as exc:
-        await message.answer(f"Failed to render shape: {exc}")
+    # Instead of server-side rendering, open the Web App viewer with parameters
+    from os import getenv
+    webapp_url = getenv("WEBAPP_URL", "http://localhost:8000/")
+    # ensure trailing slash
+    if not webapp_url.endswith("/"):
+        webapp_url += "/"
+    url = f"{webapp_url}?shape={shape}&size={size}"
+    kb = InlineKeyboardMarkup(inline_keyboard=[[
+        InlineKeyboardButton(text=f"Open {shape} (size={size})", web_app=WebAppInfo(url=url))
+    ]])
+    await message.answer(f"Open interactive viewer for {shape}:", reply_markup=kb)
 
 
 @dp.message(Command(commands=["webapp"]))

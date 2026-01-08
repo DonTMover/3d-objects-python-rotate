@@ -12,13 +12,26 @@
   </head>
   <body>
     <div class="overlay">Drag to rotate — use mouse / touch</div>
+    <div style="position:absolute; right:8px; top:8px; z-index:10;">
+      <label style="color:#fff; font-family:sans-serif">Shape:
+        <select id="shapeSelect">
+          <option value="sphere">Sphere</option>
+          <option value="cube">Cube</option>
+          <option value="cone">Cone</option>
+          <option value="cylinder">Cylinder</option>
+        </select>
+      </label>
+      <label style="color:#fff; font-family:sans-serif; margin-left:8px">Size:
+        <input id="sizeInput" type="number" step="0.1" value="1" style="width:64px" />
+      </label>
+    </div>
     <script type="module">
       import * as THREE from 'https://unpkg.com/three@0.155.0/build/three.module.js';
       import { OrbitControls } from 'https://unpkg.com/three@0.155.0/examples/jsm/controls/OrbitControls.js';
 
       const params = new URLSearchParams(window.location.search);
-      const shape = (params.get('shape') || 'sphere').toLowerCase();
-      const size = parseFloat(params.get('size') || '1');
+      let currentShape = (params.get('shape') || 'sphere').toLowerCase();
+      let currentSize = parseFloat(params.get('size') || '1');
 
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -31,15 +44,26 @@
       scene.add(light);
       scene.add(new THREE.AmbientLight(0x404040));
 
-      let geom;
-      if (shape === 'cube') geom = new THREE.BoxGeometry(size, size, size);
-      else if (shape === 'cone') geom = new THREE.ConeGeometry(size, size * 2, 48);
-      else if (shape === 'cylinder') geom = new THREE.CylinderGeometry(size, size, size * 2, 48);
-      else geom = new THREE.SphereGeometry(size, 48, 32);
-
       const mat = new THREE.MeshStandardMaterial({ color: 0x156289, metalness: 0.2, roughness: 0.6 });
-      const mesh = new THREE.Mesh(geom, mat);
-      scene.add(mesh);
+      let mesh = null;
+
+      function createMesh(shape, size) {
+        if (mesh) {
+          scene.remove(mesh);
+          mesh.geometry.dispose();
+          mesh.material.dispose();
+          mesh = null;
+        }
+        let geom;
+        if (shape === 'cube') geom = new THREE.BoxGeometry(size, size, size);
+        else if (shape === 'cone') geom = new THREE.ConeGeometry(size, size * 2, 48);
+        else if (shape === 'cylinder') geom = new THREE.CylinderGeometry(size, size, size * 2, 48);
+        else geom = new THREE.SphereGeometry(size, 48, 32);
+        mesh = new THREE.Mesh(geom, mat);
+        scene.add(mesh);
+      }
+
+      createMesh(currentShape, currentSize);
 
       camera.position.set(3, 3, 3);
       camera.lookAt(0, 0, 0);
@@ -60,6 +84,40 @@
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
+
+      // UI bindings
+      const shapeSelect = document.getElementById('shapeSelect');
+      const sizeInput = document.getElementById('sizeInput');
+      shapeSelect.value = currentShape;
+      sizeInput.value = String(currentSize);
+
+      function updateFromUI() {
+        const s = shapeSelect.value;
+        const sz = parseFloat(sizeInput.value) || 1;
+        currentShape = s;
+        currentSize = sz;
+        createMesh(currentShape, currentSize);
+        const url = new URL(window.location.href);
+        url.searchParams.set('shape', currentShape);
+        url.searchParams.set('size', String(currentSize));
+        window.history.replaceState({}, '', url.toString());
+      }
+
+      shapeSelect.addEventListener('change', updateFromUI);
+      sizeInput.addEventListener('change', updateFromUI);
+      sizeInput.addEventListener('input', updateFromUI);
+
+      // If opened inside Telegram WebApp, expose a close button
+      if (window.Telegram && window.Telegram.WebApp) {
+        const btn = document.createElement('button');
+        btn.textContent = 'Close';
+        btn.style.position = 'absolute';
+        btn.style.left = '8px';
+        btn.style.bottom = '8px';
+        btn.style.zIndex = '10';
+        document.body.appendChild(btn);
+        btn.addEventListener('click', () => window.Telegram.WebApp.close());
+      }
     </script>
   </body>
 </html>
