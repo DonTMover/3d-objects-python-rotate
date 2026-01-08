@@ -1,0 +1,8 @@
+html, body { height: 100%; margin: 0; }
+canvas { display: block; }
+.overlay { position: absolute; left: 8px; top: 8px; color:#fff; font-family: sans-serif; background: rgba(0,0,0,0.3); padding:6px; border-radius:4px }
+
+/* UI controls */
+.controls { position:absolute; right:8px; top:8px; z-index:10; }
+.controls label { color:#fff; font-family:sans-serif; margin-right:8px }
+.close-btn { position:absolute; left:8px; bottom:8px; z-index:10 }

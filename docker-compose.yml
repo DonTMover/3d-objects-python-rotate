@@ -24,4 +24,13 @@ services:
     volumes:
       - ./src:/app
     restart: unless-stopped
+
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./src/templates:/usr/share/nginx/html:ro
+      - ./src/static:/usr/share/nginx/html/static:ro
+    restart: unless-stopped
     

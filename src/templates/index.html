@@ -12,8 +12,8 @@
   </head>
   <body>
     <div class="overlay">Drag to rotate — use mouse / touch</div>
-    <div style="position:absolute; right:8px; top:8px; z-index:10;">
-      <label style="color:#fff; font-family:sans-serif">Shape:
+    <div class="controls">
+      <label>Shape:
         <select id="shapeSelect">
           <option value="sphere">Sphere</option>
           <option value="cube">Cube</option>
@@ -21,11 +21,12 @@
           <option value="cylinder">Cylinder</option>
         </select>
       </label>
-      <label style="color:#fff; font-family:sans-serif; margin-left:8px">Size:
+      <label>Size:
         <input id="sizeInput" type="number" step="0.1" value="1" style="width:64px" />
       </label>
     </div>
-    <script type="module">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script type="module" src="/static/js/viewer.js"></script>
       import * as THREE from 'https://unpkg.com/three@0.155.0/build/three.module.js';
       import { OrbitControls } from 'https://unpkg.com/three@0.155.0/examples/jsm/controls/OrbitControls.js';
 
