@@ -102,11 +102,21 @@ async def help_handler(message: Message) -> None:
 async def main() -> None:
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
+    # Log and persist WEBAPP_URL at startup (C) - write to stdout and file for visibility
+    from os import getenv
+    webapp_url = getenv("WEBAPP_URL", "http://caddy:80/")
+    if not webapp_url.endswith("/"):
+        webapp_url += "/"
+    print(f"WEBAPP_URL={webapp_url}")
+    try:
+        with open('/tmp/webapp_url', 'w') as wf:
+            wf.write(webapp_url)
+    except Exception:
+        pass
+
     # start background heartbeat task to notify webapp about bot health
     async def heartbeat_loop():
-        webapp = getenv("WEBAPP_URL", "http://localhost:8000/")
-        if not webapp.endswith("/"):
-            webapp += "/"
+        webapp = webapp_url
         url = webapp.rstrip('/') + "/heartbeat"
         async with aiohttp.ClientSession() as session:
             # send initial start ping
