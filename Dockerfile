@@ -18,3 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Default to running the bot; docker-compose overrides commands for web/frontend as needed
 CMD ["python", "-m", "src.bot"]
+
+# Healthcheck: verify web service status endpoint
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+	CMD curl -f http://localhost:8000/status || exit 1
