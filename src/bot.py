@@ -113,6 +113,11 @@ async def main() -> None:
             wf.write(webapp_url)
     except Exception:
         pass
+    try:
+        with open('/var/log/webapp_url.log', 'a') as lf:
+            lf.write(f"{int(time.time())} {webapp_url}\n")
+    except Exception:
+        pass
 
     # start background heartbeat task to notify webapp about bot health
     async def heartbeat_loop():
