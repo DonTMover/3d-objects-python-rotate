@@ -2,6 +2,7 @@ import asyncio
 import logging
 import sys
 from os import getenv
+from . import config
 import time
 import aiohttp
 
@@ -103,8 +104,8 @@ async def main() -> None:
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
     # Log and persist WEBAPP_URL at startup (C) - write to stdout and file for visibility
-    from os import getenv
-    webapp_url = getenv("WEBAPP_URL", "http://caddy:80/")
+    # prefer explicit env var, otherwise use central config default
+    webapp_url = getenv("WEBAPP_URL", None) or config.WEBAPP_URL
     if not webapp_url.endswith("/"):
         webapp_url += "/"
     print(f"WEBAPP_URL={webapp_url}")
