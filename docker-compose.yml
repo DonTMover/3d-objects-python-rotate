@@ -28,6 +28,7 @@ services:
       - web
     volumes:
       - ./src:/app
+      - ./logs:/var/log
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://web:8000/status || exit 1"]
