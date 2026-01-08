@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>3D Viewer</title>
+    <style>
+      html,body { height:100%; margin:0; }
+      canvas { display:block; }
+      .overlay { position: absolute; left: 8px; top: 8px; color:#fff; font-family: sans-serif; background: rgba(0,0,0,0.3); padding:6px; border-radius:4px }
+    </style>
+  </head>
+  <body>
+    <div class="overlay">Drag to rotate — use mouse / touch</div>
+    <script type="module">
+      import * as THREE from 'https://unpkg.com/three@0.155.0/build/three.module.js';
+      import { OrbitControls } from 'https://unpkg.com/three@0.155.0/examples/jsm/controls/OrbitControls.js';
+
+      const params = new URLSearchParams(window.location.search);
+      const shape = (params.get('shape') || 'sphere').toLowerCase();
+      const size = parseFloat(params.get('size') || '1');
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      const light = new THREE.DirectionalLight(0xffffff, 1);
+      light.position.set(5, 5, 5);
+      scene.add(light);
+      scene.add(new THREE.AmbientLight(0x404040));
+
+      let geom;
+      if (shape === 'cube') geom = new THREE.BoxGeometry(size, size, size);
+      else if (shape === 'cone') geom = new THREE.ConeGeometry(size, size * 2, 48);
+      else if (shape === 'cylinder') geom = new THREE.CylinderGeometry(size, size, size * 2, 48);
+      else geom = new THREE.SphereGeometry(size, 48, 32);
+
+      const mat = new THREE.MeshStandardMaterial({ color: 0x156289, metalness: 0.2, roughness: 0.6 });
+      const mesh = new THREE.Mesh(geom, mat);
+      scene.add(mesh);
+
+      camera.position.set(3, 3, 3);
+      camera.lookAt(0, 0, 0);
+
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+
+      function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    </script>
+  </body>
+</html>

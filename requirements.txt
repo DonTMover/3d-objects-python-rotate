@@ -1,0 +1,8 @@
+aiogram>=3.24.0
+numpy
+matplotlib
+fastapi
+uvicorn[standard]
+Pillow
+trimesh
+pyrender

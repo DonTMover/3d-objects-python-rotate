@@ -7,7 +7,7 @@ from aiogram import Bot, Dispatcher, html
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart, Command
-from aiogram.types import Message
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
 TOKEN = getenv("BOT_TOKEN")
 
@@ -63,6 +63,18 @@ async def shape_handler(message: Message) -> None:
             await message.answer(f"Here is your {shape} of size {size}.")
     except Exception as exc:
         await message.answer(f"Failed to render shape: {exc}")
+
+
+@dp.message(Command(commands=["webapp"]))
+async def webapp_handler(message: Message) -> None:
+    """Send a button that opens the interactive web app (Three.js)"""
+    # WEBAPP_URL can be set to a public HTTPS endpoint (ngrok or deployed service)
+    from os import getenv
+    webapp_url = getenv("WEBAPP_URL", "http://localhost:8000/")
+    kb = InlineKeyboardMarkup(inline_keyboard=[[
+        InlineKeyboardButton(text="Open 3D Viewer", web_app=WebAppInfo(url=webapp_url))
+    ]])
+    await message.answer("Open interactive viewer:", reply_markup=kb)
 
 
 @dp.message(Command(commands=["help"]))
