@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bot Uptime Stats</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>body{font-family:sans-serif;margin:12px} #status{margin-bottom:8px}</style>
+  </head>
+  <body>
+    <h2>Bot Uptime & Activity</h2>
+    <div id="status">Loading...</div>
+    <canvas id="chart" width="800" height="240"></canvas>
+
+    <script>
+      async function loadData() {
+        const res = await fetch('/metrics?minutes=60');
+        const data = await res.json();
+        return data;
+      }
+
+      function toLabels(tsArray){
+        return tsArray.map(ts=>{
+          const d = new Date(ts*1000);
+          return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+        });
+      }
+
+      async function init(){
+        const data = await loadData();
+        const labels = toLabels(data.labels);
+        const counts = data.counts;
+        const ctx = document.getElementById('chart').getContext('2d');
+        const chart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{label:'heartbeats per minute', data: counts, borderColor:'rgb(75,192,192)', tension:0.2}]
+          },
+          options:{scales:{y:{beginAtZero:true}}}
+        });
+        const status = document.getElementById('status');
+        status.textContent = 'Bot start: ' + (data.bot_start ? new Date(data.bot_start*1000).toLocaleString() : 'unknown');
+
+        setInterval(async ()=>{
+          const d = await loadData();
+          chart.data.datasets[0].data = d.counts;
+          chart.data.labels = toLabels(d.labels);
+          status.textContent = 'Bot start: ' + (d.bot_start ? new Date(d.bot_start*1000).toLocaleString() : 'unknown') + ' — last update: ' + new Date().toLocaleTimeString();
+          chart.update();
+        }, 15000);
+      }
+      init();
+    </script>
+  </body>
+</html>

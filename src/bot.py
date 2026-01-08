@@ -2,6 +2,8 @@ import asyncio
 import logging
 import sys
 from os import getenv
+import time
+import aiohttp
 
 from aiogram import Bot, Dispatcher, html
 from aiogram.client.default import DefaultBotProperties
@@ -99,6 +101,28 @@ async def help_handler(message: Message) -> None:
 
 async def main() -> None:
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+
+    # start background heartbeat task to notify webapp about bot health
+    async def heartbeat_loop():
+        webapp = getenv("WEBAPP_URL", "http://localhost:8000/")
+        if not webapp.endswith("/"):
+            webapp += "/"
+        url = webapp.rstrip('/') + "/heartbeat"
+        async with aiohttp.ClientSession() as session:
+            # send initial start ping
+            payload = {"ts": time.time(), "bot_start": time.time()}
+            try:
+                await session.post(url, json=payload)
+            except Exception:
+                pass
+            while True:
+                try:
+                    await session.post(url, json={"ts": time.time()})
+                except Exception:
+                    pass
+                await asyncio.sleep(30)
+
+    asyncio.create_task(heartbeat_loop())
     await dp.start_polling(bot)
 
 
