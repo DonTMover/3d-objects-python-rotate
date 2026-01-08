@@ -11,16 +11,21 @@ services:
     volumes:
       - ./src:/app
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/status || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   bot:
     build: .
-    # start ngrok + webapp + bot together inside container
-    command: python -m src.serve_and_ngrok
+    command: python -m src.bot
     environment:
       - BOT_TOKEN=${BOT_TOKEN}
-      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+      - WEBAPP_URL=${WEBAPP_PUBLIC_URL:-http://caddy:80/}
       - PYTHONUNBUFFERED=1
-    # serve_and_ngrok will start uvicorn itself; no depends_on required
+    depends_on:
+      - web
     volumes:
       - ./src:/app
     restart: unless-stopped

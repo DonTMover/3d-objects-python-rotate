@@ -16,4 +16,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-CMD ["python", "-m", "src.serve_and_ngrok"]
+# Default to running the bot; docker-compose overrides commands for web/frontend as needed
+CMD ["python", "-m", "src.bot"]
