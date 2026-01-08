@@ -26,11 +26,22 @@ services:
     restart: unless-stopped
 
   frontend:
-    image: nginx:alpine
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src/templates:/usr/src/app/templates:ro
+      - ./src/static:/usr/src/app/static:ro
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2
     ports:
       - "8080:80"
     volumes:
-      - ./src/templates:/usr/share/nginx/html:ro
-      - ./src/static:/usr/share/nginx/html/static:ro
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      - frontend
+      - web
     restart: unless-stopped
     

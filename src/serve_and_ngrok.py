@@ -7,7 +7,7 @@ from typing import Optional
 from pyngrok import ngrok
 
 
-def start_ngrok(port: int = 8000, auth_token: Optional[str] = None) -> str:
+def start_ngrok(port: int = 8080, auth_token: Optional[str] = None, target: Optional[str] = None) -> str:
     """Start an ngrok tunnel to local `port` and return the public URL.
 
     If `auth_token` provided, set it before connecting.
@@ -15,7 +15,9 @@ def start_ngrok(port: int = 8000, auth_token: Optional[str] = None) -> str:
     if auth_token:
         ngrok.set_auth_token(auth_token)
 
-    tunnel = ngrok.connect(port, "http")
+    # If `target` is provided (like "caddy:80"), tunnel directly to that container/host:port
+    addr = target if target else port
+    tunnel = ngrok.connect(addr, "http")
     public_url = tunnel.public_url
     if not public_url.endswith("/"):
         public_url += "/"
@@ -39,7 +41,8 @@ async def start_bot():
 
 def main():
     auth = os.getenv("NGROK_AUTHTOKEN")
-    public = start_ngrok(port=8000, auth_token=auth)
+    # tunnel to Caddy inside compose network so public URL serves frontend via Caddy
+    public = start_ngrok(port=8080, auth_token=auth, target="caddy:80")
     # export for other processes
     os.environ["WEBAPP_URL"] = public
 
