@@ -14,13 +14,13 @@ services:
 
   bot:
     build: .
-    command: python -m src.bot
+    # start ngrok + webapp + bot together inside container
+    command: python -m src.serve_and_ngrok
     environment:
       - BOT_TOKEN=${BOT_TOKEN}
-      - WEBAPP_URL=${WEBAPP_URL:-http://web:8000/}
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
       - PYTHONUNBUFFERED=1
-    depends_on:
-      - web
+    # serve_and_ngrok will start uvicorn itself; no depends_on required
     volumes:
       - ./src:/app
     restart: unless-stopped
